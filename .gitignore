@@ -16,3 +16,5 @@ dist/
 chocolate.egg-info/
 __pycache__/
 doc/_build
+
+venv/

@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/areeh/chocolate.svg?branch=master)](https://travis-ci.org/areeh/chocolate)
 # Chocolate
 Chocolate is a **completely asynchronous** optimisation framework relying solely on a
 database to share information between workers. Chocolate uses **no master process** for
