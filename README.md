@@ -1,4 +1,8 @@
 [![Build Status](https://travis-ci.org/areeh/chocolate.svg?branch=master)](https://travis-ci.org/areeh/chocolate)
+
+# areeh/chocolate
+Fork of Chocolate to support PostgreSQL. Original README provided below for reference:
+
 # Chocolate
 Chocolate is a **completely asynchronous** optimisation framework relying solely on a
 database to share information between workers. Chocolate uses **no master process** for
