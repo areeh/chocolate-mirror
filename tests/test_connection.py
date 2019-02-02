@@ -21,7 +21,7 @@ from chocolate import PostgresConnection
 Postgresql = testing.postgresql.PostgresqlFactory(cache_initialized_db=True)
 
 
-def tearDownModule(self):
+def tearDownModule():
     Postgresql.clear_cache()
 
 
@@ -226,10 +226,6 @@ class TestSQLite(unittest.TestCase, Base):
 
 class TestPostgres(unittest.TestCase, Base):
     def setUp(self):
-        # self.tmp_dir = tempfile.TemporaryDirectory()
-        # self.db_name = "tmp.db"
-        # self.engine_str = "postgres:///{}".format(os.path.join(self.tmp_dir.name, self.db_name))
-
         self.postgresql = Postgresql()
         self.engine_str = self.postgresql.url()
 
@@ -239,8 +235,11 @@ class TestPostgres(unittest.TestCase, Base):
         self.conn_args = (self.engine_str,)
 
     def tearDown(self):
-        # self.tmp_dir.cleanup()
         self.postgresql.stop()
+
+    def test_empty_db_connect(self):
+        engine_str = "postgres://"
+        self.assertRaises(RuntimeError, PostgresConnection, engine_str)
 
     def test_empty_name_connect(self):
         engine_str = "postgres://{}".format(self.engine_str.replace("test", ""))

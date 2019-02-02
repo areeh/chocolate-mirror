@@ -1,11 +1,9 @@
 import codecs
 import gc
 import pickle
-import re
 from contextlib import contextmanager
 
 import dataset
-import filelock
 
 from ..base import Connection
 
@@ -15,7 +13,7 @@ class PostgresConnection(Connection):
 
     TODO: Fix
     The library uses locks on the Connection, which Postgres does not seem to need
-    For now there is only an ugly "pass" lock that naturally fails the lock test
+    For now there is only an ugly "pass" lock that will of course fail any real lock test
     (it does not actually lock anything)
 
     We use `dataset <https://dataset.readthedocs.io>`_ under the hood allowing
@@ -48,22 +46,10 @@ class PostgresConnection(Connection):
         if not url.startswith("postgresql://"):
             raise RuntimeError("Missing 'postgresql://' at the begin of url".format(url))
 
-        # if url == "postgresql://" or url == "postgresql:///:memory:":
-        #     raise RuntimeError("Cannot use memory database as it exists only for the time of the connection")
-
-        match = re.search("postgresql://(.*)", url)
-        if match is not None:
-            db_path = match.group(1)
-        else:
-            raise RuntimeError("Cannot find postgres db path in {}".format(url))
-
         self.url = url
         self.result_table_name = result_table
         self.complementary_table_name = complementary_table
         self.space_table_name = space_table
-
-        self._lock = filelock.FileLock("{}.lock".format(db_path))
-        self.hold_lock = False
 
         # with self.lock():
         #     db = dataset.connect(self.url)
@@ -74,24 +60,10 @@ class PostgresConnection(Connection):
 
     @contextmanager
     def lock(self, timeout=-1, poll_interval=0.05):
-        """Context manager that locks the entire database.
-
-        Args:
-            timeout: If the lock could not be acquired in *timeout* seconds
-                raises a timeout error. If 0 or less, wait forever.
-            poll_interval: Number of seconds between lock acquisition tryouts.
-
-        Raises:
-            TimeoutError: Raised if the lock could not be acquired.
-
+        """
         Always passes with postgresql, dataset handles locking
         """
-        if self.hold_lock:
-            yield
-        else:
-            self.hold_lock = True
-            yield
-            self.hold_lock = False
+        yield
 
     def all_results(self):
         """Get a list of all entries of the result table. The order is
