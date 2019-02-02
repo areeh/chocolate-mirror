@@ -6,6 +6,8 @@ ghalton>=0.6
 sphinx>=1.5
 hypothesis>=3.6
 pandas>=0.19
+psycopg2
 scipy>=0.18
 scikit-learn>=0.18
+-e git+https://github.com/tk0miya/testing.postgresql.git@c81ded434d00ec8424de0f9e1f4063c778c6aaa8#egg=testing.postgresql
 nose>=1.3

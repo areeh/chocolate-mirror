@@ -1,3 +1,4 @@
+import codecs
 import gc
 import pickle
 import re
@@ -12,9 +13,10 @@ from ..base import Connection
 class PostgresConnection(Connection):
     """Connection to a Postgres database.
 
-    # TODO: update this for Postgres
-    Before calling any method you must explicitly :meth:`lock` the database
-    since Postgres does not handle well concurrency.
+    TODO: Fix
+    The library uses locks on the Connection, which Postgres does not seem to need
+    For now there is only an ugly "pass" lock that naturally fails the lock test
+    (it does not actually lock anything)
 
     We use `dataset <https://dataset.readthedocs.io>`_ under the hood allowing
     us to manage a Postgres database just like a list of dictionaries. Thus no
@@ -25,10 +27,7 @@ class PostgresConnection(Connection):
         url (str): Full url to the database, as described in the `SQLAlchemy
             documentation
             <http://docs.sqlalchemy.org/en/latest/core/engines.html#postgres>`_.
-            The url is parsed to find the database path. A lock file will be
-            created in the same directory than the database. In memory
-            databases (``url = "postgres:///"`` or ``url = "postgres:///:memory:"``)
-            are not allowed.
+            The url is parsed to find the database path.
         result_table (str): Table used to store the experiences and their results.
         complementary_table (str): Table used to store complementary information necessary
             to the optimizer.
@@ -46,13 +45,13 @@ class PostgresConnection(Connection):
         if url.endswith((" ", "\t")):
             raise RuntimeError("Database name ends with space {}".format(url))
 
-        if not url.startswith("postgres://"):
-            raise RuntimeError("Missing 'postgres:///' at the begin of url".format(url))
+        if not url.startswith("postgresql://"):
+            raise RuntimeError("Missing 'postgresql://' at the begin of url".format(url))
 
-        # if url == "postgres://" or url == "postgres:///:memory:":
+        # if url == "postgresql://" or url == "postgresql:///:memory:":
         #     raise RuntimeError("Cannot use memory database as it exists only for the time of the connection")
 
-        match = re.search("postgres:///(.*)", url)
+        match = re.search("postgresql://(.*)", url)
         if match is not None:
             db_path = match.group(1)
         else:
@@ -85,24 +84,14 @@ class PostgresConnection(Connection):
         Raises:
             TimeoutError: Raised if the lock could not be acquired.
 
-        Example:
-        ::
-
-            conn = PostgresConnection("postgres:///temp.db")
-            with conn.lock(timeout=5):
-                # The database is locked
-                all_ = conn.all_results()
-                conn.insert({"new_data" : len(all_)})
-
-            # The database is unlocked
+        Always passes with postgresql, dataset handles locking
         """
         if self.hold_lock:
             yield
         else:
-            with self._lock.acquire(timeout, poll_interval):
-                self.hold_lock = True
-                yield
-                self.hold_lock = False
+            self.hold_lock = True
+            yield
+            self.hold_lock = False
 
     def all_results(self):
         """Get a list of all entries of the result table. The order is
@@ -187,7 +176,11 @@ class PostgresConnection(Connection):
             return None
 
         assert entry_count == 1, "Space table unexpectedly contains more than one space."
-        return pickle.loads(db[self.space_table_name].find_one()["space"])
+
+        space = db[self.space_table_name].find_one()["space"]
+        # Use encoding that works well with postgres
+        unpickled = pickle.loads(codecs.decode(space.encode(), "base64"))
+        return unpickled
 
     def insert_space(self, space):
         """Insert a space in the database.
@@ -199,7 +192,9 @@ class PostgresConnection(Connection):
         db = dataset.connect(self.url)
         assert db[self.space_table_name].count() == 0, ("Space table cannot contain more than one space, "
                                                         "clear table first.")
-        return db[self.space_table_name].insert({"space": pickle.dumps(space)})
+        # Use encoding that works well with postgres
+        pickled = codecs.encode(pickle.dumps(space), 'base64').decode()
+        return db[self.space_table_name].insert({"space": pickled})
 
     def clear(self):
         """Clear all data from the database.

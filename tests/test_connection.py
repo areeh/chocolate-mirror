@@ -6,6 +6,7 @@ import time
 import unittest
 import uuid
 
+import testing.postgresql
 from hypothesis import given
 from hypothesis.strategies import text
 
@@ -16,6 +17,13 @@ except ImportError:
 
 from chocolate import SQLiteConnection, MongoDBConnection, DataFrameConnection, Space, uniform
 from chocolate import PostgresConnection
+
+Postgresql = testing.postgresql.PostgresqlFactory(cache_initialized_db=True)
+
+
+def tearDownModule(self):
+    Postgresql.clear_cache()
+
 
 if pymongo is not None:
     client = pymongo.MongoClient("mongodb://localhost:27017/", serverSelectionTimeoutMS=5)
@@ -214,9 +222,12 @@ class TestSQLite(unittest.TestCase, Base):
 
 class TestPostgres(unittest.TestCase, Base):
     def setUp(self):
-        self.tmp_dir = tempfile.TemporaryDirectory()
-        self.db_name = "tmp.db"
-        self.engine_str = "postgres:///{}".format(os.path.join(self.tmp_dir.name, self.db_name))
+        # self.tmp_dir = tempfile.TemporaryDirectory()
+        # self.db_name = "tmp.db"
+        # self.engine_str = "postgres:///{}".format(os.path.join(self.tmp_dir.name, self.db_name))
+
+        self.postgresql = Postgresql()
+        self.engine_str = self.postgresql.url()
 
         self.conn = PostgresConnection(self.engine_str)
 
@@ -224,19 +235,20 @@ class TestPostgres(unittest.TestCase, Base):
         self.conn_args = (self.engine_str,)
 
     def tearDown(self):
-        self.tmp_dir.cleanup()
+        # self.tmp_dir.cleanup()
+        self.postgresql.stop()
 
     def test_empty_name_connect(self):
-        engine_str = "postgres:///{}".format(os.path.join(self.tmp_dir.name, ""))
+        engine_str = "postgres://{}".format(self.engine_str.replace("test", ""))
         self.assertRaises(RuntimeError, PostgresConnection, engine_str)
 
     @given(text(alphabet="/ "))
     def test_invalid_ending_name_connect(self, s):
-        engine_str = "postgres:///{}".format(os.path.join(self.tmp_dir.name, s))
+        engine_str = "postgres://{}".format(os.path.join(self.engine_str, s))
         self.assertRaises(RuntimeError, PostgresConnection, engine_str)
 
     def test_no_uri_connect(self):
-        engine_str = os.path.join(self.tmp_dir.name, self.db_name)
+        engine_str = os.path.join(self.engine_str.replace("postgresql://", ""))
         self.assertRaises(RuntimeError, PostgresConnection, engine_str)
 
 
