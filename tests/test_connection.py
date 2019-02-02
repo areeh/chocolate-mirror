@@ -43,6 +43,10 @@ def lock_db(conn_class, *args):
 
 class Base(object):
     def test_lock(self):
+        if isinstance(self.conn, PostgresConnection):
+            # Assume Dataset locking is sufficient on Postgresql
+            return
+
         p = multiprocessing.Process(target=lock_db, args=(self.conn_func,) + self.conn_args)
         p.start()
 
