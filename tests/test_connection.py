@@ -15,6 +15,7 @@ except ImportError:
     pymongo = None
 
 from chocolate import SQLiteConnection, MongoDBConnection, DataFrameConnection, Space, uniform, QuasiRandom
+from chocolate import PostgresConnection
 
 if pymongo is not None:
     client = pymongo.MongoClient("mongodb://localhost:27017/", serverSelectionTimeoutMS=5)
@@ -211,6 +212,34 @@ class TestSQLite(unittest.TestCase, Base):
     def test_memory_raises(self):
         engine_str = "sqlite:///:memory:"
         self.assertRaises(RuntimeError, SQLiteConnection, engine_str)
+
+
+class TestPostgres(unittest.TestCase, Base):
+    def setUp(self):
+        self.tmp_dir = tempfile.TemporaryDirectory()
+        self.db_name = "tmp.db"
+        self.engine_str = "postgres:///{}".format(os.path.join(self.tmp_dir.name, self.db_name))
+
+        self.conn = PostgresConnection(self.engine_str)
+
+        self.conn_func = PostgresConnection
+        self.conn_args = (self.engine_str,)
+
+    def tearDown(self):
+        self.tmp_dir.cleanup()
+
+    def test_empty_name_connect(self):
+        engine_str = "postgres:///{}".format(os.path.join(self.tmp_dir.name, ""))
+        self.assertRaises(RuntimeError, PostgresConnection, engine_str)
+
+    @given(text(alphabet="/ "))
+    def test_invalid_ending_name_connect(self, s):
+        engine_str = "postgres:///{}".format(os.path.join(self.tmp_dir.name, s))
+        self.assertRaises(RuntimeError, PostgresConnection, engine_str)
+
+    def test_no_uri_connect(self):
+        engine_str = os.path.join(self.tmp_dir.name, self.db_name)
+        self.assertRaises(RuntimeError, PostgresConnection, engine_str)
 
 
 @unittest.skipIf(pymongo is None, "Cannot find pymongo module")
