@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/areeh/chocolate.svg?branch=master)](https://travis-ci.org/areeh/chocolate)
+[![codecov](https://codecov.io/gh/areeh/chocolate/branch/master/graph/badge.svg)](https://codecov.io/gh/areeh/chocolate)
 
 # areeh/chocolate
 Fork of Chocolate to support PostgreSQL. Original README provided below for reference:
