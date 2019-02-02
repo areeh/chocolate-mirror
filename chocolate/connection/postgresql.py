@@ -1,11 +1,10 @@
-from contextlib import contextmanager
 import gc
 import pickle
 import re
+from contextlib import contextmanager
 
 import dataset
 import filelock
-import sqlalchemy
 
 from ..base import Connection
 

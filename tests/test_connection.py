@@ -14,7 +14,7 @@ try:
 except ImportError:
     pymongo = None
 
-from chocolate import SQLiteConnection, MongoDBConnection, DataFrameConnection, Space, uniform, QuasiRandom
+from chocolate import SQLiteConnection, MongoDBConnection, DataFrameConnection, Space, uniform
 from chocolate import PostgresConnection
 
 if pymongo is not None:
@@ -133,18 +133,17 @@ class Base(object):
         self.assertEqual(space, space_read)
         self.assertRaises(AssertionError, self.conn.insert_space, space)
 
-
     def test_conditional_space(self):
         u = uniform(0.0, 2)
         l = uniform(1, 4)
         qu = uniform(0.01, 1)
         ql = uniform(5, 10)
-        s = [{"k1" : "a", "k2" : "b",
-                        "a" : u,
-                        "b" : l},
-                   {"k1" : "a", "k2" : "c",
-                        "a" : qu,
-                        "c" : ql}]
+        s = [{"k1": "a", "k2": "b",
+              "a": u,
+              "b": l},
+             {"k1": "a", "k2": "c",
+              "a": qu,
+              "c": ql}]
         space = Space(s)
 
         space_read = self.conn.get_space()
@@ -155,7 +154,6 @@ class Base(object):
 
         self.assertEqual(space, space_read)
         self.assertRaises(AssertionError, self.conn.insert_space, space)
-
 
     def test_clear(self):
         self.conn.insert_result({"foo": "bar"})
@@ -168,10 +166,10 @@ class Base(object):
         self.assertEqual(self.conn.get_space(), None)
 
     def test_pop_id(self):
-        entry = {"foo": "bar", "bar": "spam", "_loss" : 0.1}
+        entry = {"foo": "bar", "bar": "spam", "_loss": 0.1}
 
         self.conn.insert_result(entry)
-        results =  self.conn.find_results({})
+        results = self.conn.find_results({})
         for doc in results:
             doc = self.conn.pop_id(doc)
             self.assertEqual(doc, entry)
@@ -268,8 +266,8 @@ class TestDataFrame(unittest.TestCase, Base):
         data = [{"abc": 0, "def": 2}, {"abc": 1}, {"def": 42, "abc": 67, "hij": 23}]
         comp = [{"abc": 0, "def": 2}, {"abc": 1}, {"def": 42, "abc": 67, "hij": 23}]
         space = {"a": uniform(1, 2),
-             "b": {"c": {"c1": uniform(0, 5)},
-                   "d": {"d1": uniform(0, 6)}}}
+                 "b": {"c": {"c1": uniform(0, 5)},
+                       "d": {"d1": uniform(0, 6)}}}
 
         for d in data:
             self.conn.insert_result(d)
