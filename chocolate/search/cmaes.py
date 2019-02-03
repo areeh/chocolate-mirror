@@ -494,7 +494,9 @@ class MOCMAES(SearchAlgorithm):
             candidate = dict()
             candidate["step"] = numpy.array([c[str(k)] for k in self.space.names()])
             candidate["chocolate_id"] = c["_chocolate_id"]
-            candidate["parent_idx"] = c["_parent_idx"]
+            # TODO: Failed as it does not always exist
+            #candidate["parent_idx"] = c['_parent_idx']
+            candidate["parent_idx"] = c.get("_parent_idx")
             candidate["loss"] = None
 
             candidate["X"] = numpy.array([results[c["_chocolate_id"]][str(k)] for k in self.space.names()])
