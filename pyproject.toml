@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "intelecy-chocolate"
-version = "0.1.0"
+version = "0.1.1"
 description = "Intelecy fork of Chocolate"
 authors = ["areeh <are.haartveit@intelecy.com>"]
 license = ""
@@ -19,7 +19,7 @@ ghalton = "^0.6"
 sphinx = "^1.5"
 pandas = "^0.19"
 scipy = "^0.18"
-scikit-learn = "^0.18"
+scikit-learn = "^0.21"
 psycopg2-binary = "^2.8.5"
 
 [tool.poetry.dev-dependencies]
