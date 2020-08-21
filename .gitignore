@@ -17,5 +17,5 @@ chocolate.egg-info/
 __pycache__/
 doc/_build
 
-venv/
+.venv/
 chocolate/mo/hv.cp35-win_amd64.pyd
