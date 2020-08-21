@@ -4,13 +4,11 @@ python:
   - "3.5"
   - "3.6"
 # command to install dependencies
-install:
-  # Ensure using latest pip, Travis provides wheels for most packages
+before_install:
   - pip install -U pip
-  - pip install .
-  - pip install -r requirements.txt
-  - pip install codecov
-# command to run tests
+  - pip install poetry
+install:
+  - poetry install --dev
 script:
   - python setup.py nosetests --with-coverage
 services:
