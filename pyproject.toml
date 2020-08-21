@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "intelecy-chocolate"
-version = "0.1.0"
+version = "0.1.1"
 description = "Intelecy fork of Chocolate"
 authors = ["areeh <are.haartveit@intelecy.com>"]
 license = ""
